@@ -2,6 +2,7 @@ import Imap from 'node-imap';
 import { simpleParser } from 'mailparser';
 import Email from '../models/Email.js';
 import dotenv from 'dotenv';
+import { indexEmail } from './searchService.js';
 
 dotenv.config();
 
@@ -63,6 +64,7 @@ const handleMessage = (msg, account) => {
     });
 
     await email.save();
+    await indexEmail(email);
     console.log(`Email savedd from by ${parsedData.from?.text}`);
   });
 };
