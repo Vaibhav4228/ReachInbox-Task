@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2 
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2  # Official Elasticsearch image
     container_name: reachinbox-elastic
     ports:
       - "9200:9200"
@@ -19,16 +19,17 @@ services:
       - elastic_data:/usr/share/elasticsearch/data
 
   backend:
-    image: vaibhav990/backend:latest  
+    build:
+      context: ./backend  # Point to the 'backend' folder
     container_name: reachinbox-backend
     ports:
       - "6000:6000"
     environment:
       - MONGO_URI=mongodb+srv://vaibhav200345:vaibhav123@cluster0.xbat12p.mongodb.net/reachinbox?retryWrites=true&w=majority&appName=Cluster0
-      - ELASTICSEARCH_NODE=http://reachinbox-elastic:9200  
-      - SLACK_API_TOKEN=${SLACK_API_TOKEN}
+      - ELASTICSEARCH_NODE=http://reachinbox-elastic:9200
+      - SLACK_API_TOKEN=xoxe.xoxp-1-Mi0yLTg3NTEwMzM1MDQ2NzItODc1MTAzMzUwNDc2OC04NzMyMjkxMTcxODU5LTg3NjY4MzMzNTkyMTYtN2VmM2E0YTdkODNkMzRhNDhkOGM1ZjQ4M2Y4MzZiMjI0ZTdmOTRmZjcxYjFlMjM0ZWRjNjdjZjc0ODliY2FiYg
     depends_on:
-      - elasticsearch 
+      - elasticsearch
     restart: always
 
 volumes:
