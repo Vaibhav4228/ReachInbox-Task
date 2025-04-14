@@ -2,9 +2,14 @@ import Imap from 'node-imap';
 import { simpleParser } from 'mailparser';
 import Email from '../models/Email.js';
 import dotenv from 'dotenv';
+import { WebClient } from '@slack/web-api';
 import { indexEmail } from './searchService.js';
+import categorizeWithGemini from './geminiService.js';
+import axios from 'axios'; 
 
 dotenv.config();
+
+const slack = new WebClient(process.env.SLACK_API_TOKEN);
 
 const emailAccounts = [
   {
@@ -17,17 +22,53 @@ const emailAccounts = [
   }
 ];
 
+const sendSlackNotification = async (subject, from, to, body) => {
+  try {
+    await slack.chat.postMessage({
+      channel: process.env.SLACK_CHANNEL_ID,
+      text: `New Interested Email!
+
+Subject: ${subject}
+From: ${from}
+To: ${to.join(', ')}
+Body: ${body}`
+    });
+    console.log("slack notification sent.");
+  } catch (error) {
+    console.error('error sending Slack notification:', error);
+  }
+};
+
+const triggerWebhook = async (email) => {
+  try {
+    await axios.post(process.env.WEBHOOK_URL, {
+      subject: email.subject,
+      from: email.from,
+      to: email.to,
+      body: email.body,
+      category: email.category,
+    });
+    console.log('webhook triggered.');
+  } catch (error) {
+    console.error('failed to trigger webhook:', error.message);
+  }
+};
+
 const fetchEmails = (imap, account) => {
   const sinceDate = new Date();
   sinceDate.setDate(sinceDate.getDate() - 30);
+  console.log(`[📥] Fetching emails for ${account.user} since ${sinceDate.toDateString()}`);
 
   imap.openBox('INBOX', false, () => {
     imap.search(['ALL', ['SINCE', sinceDate.toDateString()]], (err, results) => {
-      if (err) return console.error('Search error:', err);
-      if (!results || results.length === 0) return;
+      if (err) return console.error('search error:', err);
+      if (!results || results.length === 0) {
+        console.log(`No emails found for ${account.user}`);
+        return;
+      }
 
+      console.log(`Found ${results.length} emails for ${account.user}`);
       const fetcher = imap.fetch(results, { bodies: '' });
-
       fetcher.on('message', msg => handleMessage(msg, account));
     });
   });
@@ -48,9 +89,24 @@ const handleMessage = (msg, account) => {
   });
 
   msg.once('end', async () => {
+    console.log(`🔍 Parsing email from ${account.user}...`);
+
     const parsedData = await simpleParser(buffer);
+    console.log(`subject: ${parsedData.subject}`);
+
     const existingEmail = await Email.findOne({ messageId: parsedData.messageId });
-    if (existingEmail) return;
+    if (existingEmail) {
+      console.log("duplicate email. Skipping...");
+      return;
+    }
+
+    let category = 'uncategorized';
+    try {
+      category = await categorizeWithGemini(parsedData.text);
+      console.log("ccategorized as:", category);
+    } catch (err) {
+      console.error(" failed to categorize with Gemini:", err.message);
+    }
 
     const email = new Email({
       messageId: parsedData.messageId,
@@ -61,12 +117,36 @@ const handleMessage = (msg, account) => {
       date: parsedData.date,
       folder: 'INBOX',
       account: account.user,
+      category,
     });
 
     await email.save();
     await indexEmail(email);
-    console.log(`Email savedd from by ${parsedData.from?.text}`);
+    console.log("email saved & indexed.");
+
+    if (category === 'Interested') {
+      await sendSlackNotification(parsedData.subject, parsedData.from?.text, parsedData.to?.value.map(v => v.address), parsedData.text);
+      await triggerWebhook(email);
+    }
   });
+};
+
+const connectImapWithRetry = (imap, account, retries = 0) => {
+  imap.once('ready', () => {
+    console.log(`connected to ${account.user}`);
+    fetchEmails(imap, account);
+  });
+
+  imap.once('error', (err) => {
+    if (retries < 3) {
+      console.log(` coonnection failed, retrying... (${retries + 1}/3)`);
+      setTimeout(() => connectImapWithRetry(imap, account, retries + 1), 5000);
+    } else {
+      console.error(`connection failed for ${account.user}:`, err);
+    }
+  });
+
+  imap.connect();
 };
 
 const ImapConnection = (account) => {
@@ -78,21 +158,7 @@ const ImapConnection = (account) => {
     tls: true,
   });
 
-  imap.once('ready', () => {
-    console.log(`connected to ${account.user}`);
-    fetchEmails(imap, account);
-  });
-
-  imap.on('mail', () => {
-    console.log(`newly mail for ${account.user}`);
-    fetchEmails(imap, account);
-  });
-
-  imap.once('error', err => {
-    console.error(`connected failed for ${account.user}:`, err);
-  });
-
-  imap.connect();
+  connectImapWithRetry(imap, account);
 };
 
 const startConnections = () => {
