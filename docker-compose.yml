@@ -26,7 +26,7 @@ services:
     environment:
       - MONGO_URI=mongodb+srv://vaibhav200345:vaibhav123@cluster0.xbat12p.mongodb.net/reachinbox?retryWrites=true&w=majority&appName=Cluster0
       - ELASTICSEARCH_NODE=http://reachinbox-elastic:9200  
-      - SLACK_API_TOKEN=xoxe.xoxp-1-Mi0yLTg3NTEwMzM1MDQ2NzItODc1MTAzMzUwNDc2OC04NzMyMjkxMTcxODU5LTg3NjY4MzMzNTkyMTYtN2VmM2E0YTdkODNkMzRhNDhkOGM1ZjQ4M2Y4MzZiMjI0ZTdmOTRmZjcxYjFlMjM0ZWRjNjdjZjc0ODliY2FiYg
+      - SLACK_API_TOKEN=${SLACK_API_TOKEN}
     depends_on:
       - elasticsearch 
     restart: always
