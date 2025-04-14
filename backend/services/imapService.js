@@ -57,7 +57,7 @@ const triggerWebhook = async (email) => {
 const fetchEmails = (imap, account) => {
   const sinceDate = new Date();
   sinceDate.setDate(sinceDate.getDate() - 30);
-  console.log(`[📥] Fetching emails for ${account.user} since ${sinceDate.toDateString()}`);
+  console.log(` Fetching emails for ${account.user} since ${sinceDate.toDateString()}`);
 
   imap.openBox('INBOX', false, () => {
     imap.search(['ALL', ['SINCE', sinceDate.toDateString()]], (err, results) => {

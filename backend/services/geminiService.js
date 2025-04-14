@@ -34,11 +34,12 @@ const categorizeWithGemini = async (emailBody) => {
 
     console.log("Gemini API Response:", response.data); debugging
 
-    const category = response.data.choices[0].text.trim();
+    const category = response.data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+
     return category;
   } catch (error) {
     if (error.response) {
-      // Log full response for debugging
+   
       console.error('Error response from Gemini API:', error.response.data);
     } else {
       console.error('Error message:', error.message);

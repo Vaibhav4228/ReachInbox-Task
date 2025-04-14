@@ -1,15 +1,24 @@
-import { useTheme } from './context/ThemeContext';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ThemeProvider } from './context/ThemeContext';
+import InboxPage from './pages/InboxPage';
+import EmailDetailPage from './pages/EmailDetailPage';
+import AppLayout from './components/layout/AppLayout';
+import SettingsPage from './pages/SettingsPage';
 
 function App() {
-  const { theme, toggleTheme } = useTheme();
-
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white">
-      <button onClick={toggleTheme} className="p-2 m-4 bg-gray-200 dark:bg-gray-800 rounded">
-        Toggle to {theme === 'light' ? 'Dark' : 'Light'} Mode
-      </button>
-   
-    </div>
+    <ThemeProvider>
+      <Router>
+        <AppLayout>
+          <Routes>
+            <Route path="/" element={<Navigate to="/inbox" />} />
+            <Route path="/inbox" element={<InboxPage />} />
+            <Route path="/email/:id" element={<EmailDetailPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+          </Routes>
+        </AppLayout>
+      </Router>
+    </ThemeProvider>
   );
 }
 
