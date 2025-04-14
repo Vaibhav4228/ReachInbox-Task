@@ -1,6 +1,25 @@
 
 # ReachInbox Assigenment Project
 
+![image](https://github.com/user-attachments/assets/35cee7bd-1065-43b0-bfae-daef0acb11cd)
+
+![image](https://github.com/user-attachments/assets/6c364c73-b71a-4241-9700-acc66831db62)
+
+## Here you can choose your emails what email mails you want to see
+![image](https://github.com/user-attachments/assets/0a41f56d-d05d-4e61-8e4e-618f4f6429a3)
+
+## Now genrating a AI replies we can edit it and copy it and also refresh it so we can get multiple suggest replies
+![image](https://github.com/user-attachments/assets/efbaa397-b303-425d-84d0-00e7076f353a)
+
+
+## And using elastic search we can search out emails 
+![image](https://github.com/user-attachments/assets/dc630b02-1a11-4477-8325-4a7027657720)
+
+
+
+
+
+
 ## Overview
 
 VMAIL is a platform designed to help businesses find, enrich, and engage high-intent leads through multi-channel outreach. The platform integrates email, LinkedIn, Twitter, and phone outreach for seamless lead generation. The backend utilizes Node.js, MongoDB, and Elasticsearch, and the frontend is built using React.js and Vercel for deployment.
@@ -78,9 +97,11 @@ This will start both **Elasticsearch** and **Node.js** backend services in the b
 ### 1. **Technologies Used**
 
 - **React.js**: Used to build a dynamic and responsive frontend application.
-- **Vercel**: Deployed the frontend on **Vercel** for easy scaling and automatic deployments.
-- **Axios**: Used for making HTTP requests from React to the backend.
-
+- **Typescript**: for type safety
+- **Redus**: Used for state managemnt like in settings we have 
+ mails so that manage there state with AI response
+- **MUI**: Using Snackbar and paginations using MUI and there Icons also
+  
 ### 2. **Features of the Frontend**
 
 - **Email Search**: The frontend allows users to search for emails using filters like subject, from, category, and date.
@@ -122,14 +143,15 @@ npm run dev
 
 ### 2. **Frontend Setup**
 
+
 #### Prerequisites:
 - **Node.js** and **npm** installed.
 
 #### Steps:
-1. Clone the frontend repository:
+Clone the frontend repository:
 
 ```bash
-git clone https://github.com/your-username/reachinbox-frontend.git
+git clone https://github.com/vaibhav990/reachinbox-frontend.git
 cd reachinbox-frontend
 ```
 
@@ -146,25 +168,31 @@ npm install
 npm run start
 ```
 
+### **Frontend Logic**
+
+#### Features:
+1. **Email Listing**:
+   - Fetch emails from the backend.
+   - Display them with **categories** such as **Interested**, **Meeting Booked**, etc.
+
+2. **Search Emails**:
+   - Integrate **ElasticSearch** to search emails by **subject**, **from**, **category**, etc.
+
+3. **Category Filter**:
+   - Filter emails based on categories: **Interested**, **Meeting Booked**, etc.
+
+4. **User Interface**:
+   - A simple UI built with **React.js**.
+   - Display a list of emails with options to search and filter.
+
 ---
 
-## Docker Deployment
+## Docker Image:
 
-### 1. **Backend Docker Image**
-
-To build the backend Docker image, follow these steps:
-
-1. Make sure you have a `Dockerfile` in your **backend** directory.
-2. Build the Docker image:
+Pull my backend image to Docker Hub:
 
 ```bash
-docker build -t vaibhav990/backend:latest .
-```
-
-3. Push the image to Docker Hub:
-
-```bash
-docker push vaibhav990/backend:latest
+docker pull vaibhav990/backend
 ```
 
 ### 2. **Running Backend and Elasticsearch with Docker Compose**
@@ -184,9 +212,3 @@ This will start **Elasticsearch** and the **Node.js backend** together.
 In this project, we have integrated **Elasticsearch** for fast searching, **AI-based categorization** using Gemini API, **Slack notifications**, and a responsive frontend deployed on **Vercel**. Docker is used to containerize both the backend and Elasticsearch services for easy deployment.
 
 ---
-
-### **Downloadable Link for README:**
-
-Here is your **README.md** file, ready to be downloaded:
-
-[Download README.md](sandbox:/mnt/data/ReachInbox_README.md)
